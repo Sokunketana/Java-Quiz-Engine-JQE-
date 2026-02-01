@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Attempt {
-    private final Exams exam; 
-    private final Map<Integer, Answer> answers;
+    private Exams exam; 
+    private Map<Integer, Answer> answers;
 
     public Attempt(Exams exam) { 
         if (exam == null) throw new IllegalArgumentException("Exam is required");
