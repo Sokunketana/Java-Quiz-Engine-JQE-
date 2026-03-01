@@ -1,6 +1,6 @@
 package oop_project.model;
 
-public class User {
+public abstract class User {
     private final String username;
     private final String password;
     private final String role;
@@ -19,7 +19,5 @@ public class User {
         return password;
     }
 
-    public String getRole() {
-        return role;
-    }
+    public abstract String getRole();
 }
