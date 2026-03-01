@@ -2,4 +2,6 @@ test/
 
 target/
 
+pom.xml
+
 .vscode

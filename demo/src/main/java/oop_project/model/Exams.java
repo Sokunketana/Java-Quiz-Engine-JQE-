@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Exam {
+public class Exams {
     private String title;
-    private List<Question> questions;
+    private List<Questions> questions;
 
-    public Exam(String title, List<Question> questions) {
+    public Exams(String title, List<Questions> questions) {
         if (title == null || title.isBlank())
             throw new IllegalArgumentException("Title is required");
         if (questions == null || questions.isEmpty())
@@ -22,19 +22,19 @@ public class Exam {
         return title;
     }
 
-    public List<Question> getQuestions() {
+    public List<Questions> getQuestions() {
         return Collections.unmodifiableList(questions);
     }
 
     public int getTotalPoints() {
         int total = 0;
-        for (Question q : questions)
+        for (Questions q : questions)
             total += q.getPoints();
         return total;
     }
 
-    public Question findQuestionByNumber(int number) {
-        for (Question q : questions) {
+    public Questions findQuestionByNumber(int number) {
+        for (Questions q : questions) {
             if (q.getNumber() == number)
                 return q;
         }

@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Attempt {
-    private Exam exam; 
-    private Map<Integer, Answer> answers;
+    private final Exams exam; 
+    private final Map<Integer, Answer> answers;
 
-    public Attempt(Exam exam) { 
+    public Attempt(Exams exam) { 
         if (exam == null) throw new IllegalArgumentException("Exam is required");
         this.exam = exam;
         this.answers = new HashMap<>();
@@ -23,16 +23,12 @@ public class Attempt {
         return answers.get(questionNumber);
     }
 
-    public Exam getExam() {
-        return exam;
-    }
-
     // Encapsulation: scoring logic is not in Main
     public int calculateScore() {
         int total = 0;
 
         // Changed Question to Questions to match Questions.java
-        for (Question q : exam.getQuestions()) { 
+        for (Questions q : exam.getQuestions()) { 
             Answer a = answers.get(q.getNumber());
             total += q.grade(a);
         }
