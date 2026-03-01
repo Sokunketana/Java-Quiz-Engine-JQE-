@@ -23,6 +23,10 @@ public class Attempt {
         return answers.get(questionNumber);
     }
 
+    public Exam getExam() {
+        return exam;
+    }
+
     // Encapsulation: scoring logic is not in Main
     public int calculateScore() {
         int total = 0;

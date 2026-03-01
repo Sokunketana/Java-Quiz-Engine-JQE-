@@ -10,7 +10,14 @@ public class UserRegistry {
     }
 
     public void registerUser(String username, String password, String role) {
-        User newUser = new User(username, password, role);
+        User newUser;
+        if (role.equals("student")) {
+            newUser = new Student(username, password);
+        } else if (role.equals("teacher")) {
+            newUser = new Teacher(username, password);
+        } else {
+            throw new IllegalArgumentException("Unknown role: " + role);
+        }
         users.add(newUser);
     }
 
