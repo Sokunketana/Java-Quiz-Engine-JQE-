@@ -2,22 +2,22 @@ package oop_project.app;
 
 import oop_project.model.*;
 import oop_project.data.SampleData;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
- public class Main 
-{
-    public static void main( String[] args )
-    {
+
+public class Main {
+    public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
         UserRegistry registry = new UserRegistry();
         registry.registerUser("student1", "1234", "student");
         registry.registerUser("teacher1", "pass", "teacher");
 
-        Exam currentExam = SampleData.createSampleExam();
+        List<Exam> availableExams = new ArrayList<>(SampleData.createSampleExams());
 
         boolean appRunning = true;
         while (appRunning) {
@@ -36,11 +36,11 @@ import java.util.Scanner;
                 if (loggedInUser instanceof Teacher) {
                     Exam published = runTeacherMenu(sc, (Teacher) loggedInUser);
                     if (published != null) {
-                        currentExam = published;
+                        availableExams.add(published);
                         System.out.println("Exam is now available for students.");
                     }
                 } else if (loggedInUser instanceof Student) {
-                    runStudentMenu(sc, currentExam);
+                    runStudentMenu(sc, availableExams);
                 }
             }
 
@@ -50,9 +50,11 @@ import java.util.Scanner;
                 appRunning = false;
             }
         }
+
         System.out.println("Goodbye!");
         sc.close();
     }
+
     private static Exam runTeacherMenu(Scanner sc, Teacher teacher) {
         Exam published = null;
         boolean running = true;
@@ -114,7 +116,17 @@ import java.util.Scanner;
                     } else {
                         System.out.print("Exam title: ");
                         String title = sc.nextLine();
-                        published = teacher.buildExam(title);
+
+                        String category = "";
+                        while (category.isBlank()) {
+                            System.out.print("Exam category: ");
+                            category = sc.nextLine().trim();
+                            if (category.isBlank()) {
+                                System.out.println("Category cannot be empty.");
+                            }
+                        }
+
+                        published = teacher.buildExam(title, category);
                         System.out.println("Exam \"" + published.getTitle() + "\" published!");
                         running = false;
                     }
@@ -131,7 +143,8 @@ import java.util.Scanner;
         }
         return published;
     }
-    private static void runStudentMenu(Scanner sc, Exam exam) {
+
+    private static void runStudentMenu(Scanner sc, List<Exam> availableExams) {
         boolean running = true;
         while (running) {
             System.out.println("\n=== Student Menu ===");
@@ -142,10 +155,20 @@ import java.util.Scanner;
 
             switch (choice) {
                 case "1":
-                    Map<Integer, Answer> answers = new HashMap<>();
-                    System.out.println("\n=== " + exam.getTitle() + " ===");
+                    if (availableExams.isEmpty()) {
+                        System.out.println("No exams available yet.");
+                        break;
+                    }
 
-                    for (Question q : exam.getQuestions()) {
+                    Exam selectedExam = selectExam(sc, availableExams);
+                    if (selectedExam == null) {
+                        break;
+                    }
+
+                    Map<Integer, Answer> answers = new HashMap<>();
+                    System.out.println("\n=== " + selectedExam.getTitle() + " (" + selectedExam.getCategory() + ") ===");
+
+                    for (Question q : selectedExam.getQuestions()) {
                         System.out.println("\nQ" + q.getNumber() + ": " + q.getText());
                         for (Map.Entry<String, String> entry : q.getChoices().entrySet()) {
                             System.out.println("  " + entry.getKey() + ") " + entry.getValue());
@@ -156,12 +179,12 @@ import java.util.Scanner;
                     }
 
                     int score = 0;
-                    for (Question q : exam.getQuestions()) {
+                    for (Question q : selectedExam.getQuestions()) {
                         score += q.grade(answers.get(q.getNumber()));
                     }
 
                     System.out.println("\n=== RESULT ===");
-                    System.out.println("Score: " + score + " / " + exam.getTotalPoints());
+                    System.out.println("Score: " + score + " / " + selectedExam.getTotalPoints());
                     break;
 
                 case "2":
@@ -172,6 +195,71 @@ import java.util.Scanner;
                 default:
                     System.out.println("Invalid choice.");
             }
+        }
+    }
+
+    private static Exam selectExam(Scanner sc, List<Exam> availableExams) {
+        LinkedHashMap<String, String> categories = new LinkedHashMap<>();
+        for (Exam exam : availableExams) {
+            String normalized = exam.getCategory().trim().toLowerCase();
+            categories.putIfAbsent(normalized, exam.getCategory());
+        }
+
+        List<String> categoryKeys = new ArrayList<>(categories.keySet());
+
+        while (true) {
+            System.out.println("\nChoose a category:");
+            for (int i = 0; i < categoryKeys.size(); i++) {
+                String label = categories.get(categoryKeys.get(i));
+                System.out.println((i + 1) + ". " + label);
+            }
+            System.out.println("0. Back");
+
+            int categoryChoice = readMenuNumber(sc, "Choice: ", categoryKeys.size());
+            if (categoryChoice == 0) {
+                return null;
+            }
+
+            String selectedCategoryKey = categoryKeys.get(categoryChoice - 1);
+            List<Exam> examsInCategory = new ArrayList<>();
+            for (Exam exam : availableExams) {
+                if (exam.getCategory().trim().toLowerCase().equals(selectedCategoryKey)) {
+                    examsInCategory.add(exam);
+                }
+            }
+
+            while (true) {
+                System.out.println("\nChoose an exam:");
+                for (int i = 0; i < examsInCategory.size(); i++) {
+                    System.out.println((i + 1) + ". " + examsInCategory.get(i).getTitle());
+                }
+                System.out.println("0. Back");
+
+                int examChoice = readMenuNumber(sc, "Choice: ", examsInCategory.size());
+                if (examChoice == 0) {
+                    break;
+                }
+
+                return examsInCategory.get(examChoice - 1);
+            }
+        }
+    }
+
+    private static int readMenuNumber(Scanner sc, String prompt, int maxOption) {
+        while (true) {
+            System.out.print(prompt);
+            String raw = sc.nextLine().trim();
+
+            try {
+                int value = Integer.parseInt(raw);
+                if (value >= 0 && value <= maxOption) {
+                    return value;
+                }
+            } catch (NumberFormatException ignored) {
+                // Keep asking until valid.
+            }
+
+            System.out.println("Invalid choice.");
         }
     }
 }
