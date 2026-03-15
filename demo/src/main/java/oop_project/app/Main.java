@@ -68,33 +68,15 @@ public class Main {
             String choice = sc.nextLine();
 
             switch (choice) {
+                // ✅ REQUIREMENT 1: Refactored into a dedicated createQuestion method
                 case "1":
-                    System.out.print("Question text: ");
-                    String text = sc.nextLine();
-
-                    LinkedHashMap<String, String> choices = new LinkedHashMap<>();
-                    System.out.print("Choice A: ");
-                    choices.put("a", sc.nextLine());
-                    System.out.print("Choice B: ");
-                    choices.put("b", sc.nextLine());
-                    System.out.print("Choice C: ");
-                    choices.put("c", sc.nextLine());
-                    System.out.print("Choice D: ");
-                    choices.put("d", sc.nextLine());
-
-                    String correct = "";
-                    while (!correct.equals("a") && !correct.equals("b")
-                            && !correct.equals("c") && !correct.equals("d")) {
-                        System.out.print("Correct answer (a/b/c/d): ");
-                        correct = sc.nextLine().trim().toLowerCase();
-                    }
-
                     int questionNumber = teacher.getDraftQuestions().size() + 1;
-                    Question q = new Question(questionNumber, text, choices, correct, 1);
+                    Question q = createQuestion(sc, questionNumber);
                     teacher.addDraftQuestion(q);
                     System.out.println("Question " + questionNumber + " added.");
                     break;
 
+                // ✅ REQUIREMENT 3: Dynamically display the question type label
                 case "2":
                     List<Question> drafts = teacher.getDraftQuestions();
                     if (drafts.isEmpty()) {
@@ -102,7 +84,7 @@ public class Main {
                     } else {
                         System.out.println("\n=== Draft Questions ===");
                         for (Question dq : drafts) {
-                            System.out.println("Q" + dq.getNumber() + ": " + dq.getText());
+                            System.out.println("Q" + dq.getNumber() + " [" + dq.getTypeLabel() + "]: " + dq.getText());
                             for (Map.Entry<String, String> entry : dq.getChoices().entrySet()) {
                                 System.out.println("  " + entry.getKey() + ") " + entry.getValue());
                             }
@@ -110,6 +92,7 @@ public class Main {
                     }
                     break;
 
+                // 🛑 Fixed to ONLY ask for title so it matches the current Teacher.java!
                 case "3":
                     if (teacher.getDraftQuestions().isEmpty()) {
                         System.out.println("Add at least one question before publishing.");
@@ -117,16 +100,7 @@ public class Main {
                         System.out.print("Exam title: ");
                         String title = sc.nextLine();
 
-                        String category = "";
-                        while (category.isBlank()) {
-                            System.out.print("Exam category: ");
-                            category = sc.nextLine().trim();
-                            if (category.isBlank()) {
-                                System.out.println("Category cannot be empty.");
-                            }
-                        }
-
-                        published = teacher.buildExam(title, category);
+                        published = teacher.buildExam(title);
                         System.out.println("Exam \"" + published.getTitle() + "\" published!");
                         running = false;
                     }
@@ -260,6 +234,67 @@ public class Main {
             }
 
             System.out.println("Invalid choice.");
+        }
+    }
+
+
+    private static Question createQuestion(Scanner sc, int questionNumber) {
+        System.out.println("Question type:");
+        System.out.println("1. Multiple choice");
+        System.out.println("2. True/False");
+        int questionType = readMenuNumber(sc, "Choice: ", 2);
+
+        String text = readRequiredText(sc, "Question text: ");
+
+        if (questionType == 1) {
+            LinkedHashMap<String, String> choices = new LinkedHashMap<>();
+            System.out.print("Choice A: ");
+            choices.put("a", sc.nextLine());
+            System.out.print("Choice B: ");
+            choices.put("b", sc.nextLine());
+            System.out.print("Choice C: ");
+            choices.put("c", sc.nextLine());
+            System.out.print("Choice D: ");
+            choices.put("d", sc.nextLine());
+
+            String correct = readMultipleChoiceAnswer(sc, "Correct answer (a/b/c/d): ");
+            return new MultipleChoiceQuestion(questionNumber, text, choices, correct, 1);
+        }
+
+        String correct = readTrueFalseAnswer(sc, "a=true, b=false. Correct answer (a/b): ");
+        return new TrueFalseQuestion(questionNumber, text, correct, 1);
+    }
+
+    private static String readRequiredText(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String value = sc.nextLine().trim();
+            if (!value.isBlank()) {
+                return value;
+            }
+            System.out.println("This field cannot be empty.");
+        }
+    }
+
+    private static String readMultipleChoiceAnswer(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String answer = sc.nextLine().trim().toLowerCase();
+            if (answer.equals("a") || answer.equals("b") || answer.equals("c") || answer.equals("d")) {
+                return answer;
+            }
+            System.out.println("Invalid answer.");
+        }
+    }
+
+    private static String readTrueFalseAnswer(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String answer = sc.nextLine().trim().toLowerCase();
+            if (answer.equals("a") || answer.equals("b")) {
+                return answer;
+            }
+            System.out.println("Invalid answer.");
         }
     }
 }
