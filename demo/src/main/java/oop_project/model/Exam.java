@@ -22,6 +22,7 @@ public class Exam {
             throw new IllegalArgumentException("Questions are required");
 
         this.title = title;
+        this.category = category.trim();
         this.questions = new ArrayList<>(questions);
     }
 
