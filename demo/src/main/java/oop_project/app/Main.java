@@ -9,6 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import main.java.oop_project.model.Answer;
+import main.java.oop_project.model.Exam;
+import main.java.oop_project.model.MultipleChoiceQuestion;
+import main.java.oop_project.model.Question;
+import main.java.oop_project.model.Student;
+import main.java.oop_project.model.Teacher;
+import main.java.oop_project.model.TrueFalseQuestion;
+import main.java.oop_project.model.User;
+import main.java.oop_project.model.UserRegistry;
+
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -118,7 +128,7 @@ public class Main {
         return published;
     }
 
-    private static void runStudentMenu(Scanner sc, List<Exam> availableExams) {
+   private static void runStudentMenu(Scanner sc, List<Exam> availableExams) {
         boolean running = true;
         while (running) {
             System.out.println("\n=== Student Menu ===");
@@ -147,9 +157,7 @@ public class Main {
                         for (Map.Entry<String, String> entry : q.getChoices().entrySet()) {
                             System.out.println("  " + entry.getKey() + ") " + entry.getValue());
                         }
-                        System.out.print("Your answer (a/b/c/d): ");
-                        String input = sc.nextLine().trim().toLowerCase();
-                        answers.put(q.getNumber(), Answer.fromText(input));
+                        answers.put(q.getNumber(), readAnswerForQuestion(sc, q));
                     }
 
                     int score = 0;
@@ -171,6 +179,7 @@ public class Main {
             }
         }
     }
+
 
     private static Exam selectExam(Scanner sc, List<Exam> availableExams) {
         LinkedHashMap<String, String> categories = new LinkedHashMap<>();
