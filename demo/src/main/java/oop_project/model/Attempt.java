@@ -13,7 +13,6 @@ public class Attempt {
         this.answers = new HashMap<>();
     }
 
-    // Encapsulation: Attempt controls how answers are stored/updated
     public void submitAnswer(int questionNumber, Answer answer) {
         if (questionNumber <= 0) throw new IllegalArgumentException("Invalid question number");
         answers.put(questionNumber, answer);
@@ -23,11 +22,13 @@ public class Attempt {
         return answers.get(questionNumber);
     }
 
-    // Encapsulation: scoring logic is not in Main
+    public Exam getExam() {
+        return exam;
+    }
+    
     public int calculateScore() {
         int total = 0;
 
-        // Changed Question to Questions to match Questions.java
         for (Question q : exam.getQuestions()) { 
             Answer a = answers.get(q.getNumber());
             total += q.grade(a);
