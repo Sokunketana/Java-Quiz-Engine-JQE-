@@ -9,16 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import main.java.oop_project.model.Answer;
-import main.java.oop_project.model.Exam;
-import main.java.oop_project.model.MultipleChoiceQuestion;
-import main.java.oop_project.model.Question;
-import main.java.oop_project.model.Student;
-import main.java.oop_project.model.Teacher;
-import main.java.oop_project.model.TrueFalseQuestion;
-import main.java.oop_project.model.User;
-import main.java.oop_project.model.UserRegistry;
-
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -78,7 +68,6 @@ public class Main {
             String choice = sc.nextLine();
 
             switch (choice) {
-                // ✅ REQUIREMENT 1: Refactored into a dedicated createQuestion method
                 case "1":
                     int questionNumber = teacher.getDraftQuestions().size() + 1;
                     Question q = createQuestion(sc, questionNumber);
@@ -86,7 +75,6 @@ public class Main {
                     System.out.println("Question " + questionNumber + " added.");
                     break;
 
-                // ✅ REQUIREMENT 3: Dynamically display the question type label
                 case "2":
                     List<Question> drafts = teacher.getDraftQuestions();
                     if (drafts.isEmpty()) {
@@ -102,7 +90,6 @@ public class Main {
                     }
                     break;
 
-                // 🛑 Fixed to ONLY ask for title so it matches the current Teacher.java!
                 case "3":
                     if (teacher.getDraftQuestions().isEmpty()) {
                         System.out.println("Add at least one question before publishing.");
@@ -110,7 +97,16 @@ public class Main {
                         System.out.print("Exam title: ");
                         String title = sc.nextLine();
 
-                        published = teacher.buildExam(title);
+                        String category = "";
+                        while (category.isBlank()) {
+                            System.out.print("Exam category: ");
+                            category = sc.nextLine().trim();
+                            if (category.isBlank()) {
+                                System.out.println("Category cannot be empty.");
+                            }
+                        }
+
+                        published = teacher.buildExam(title, category);
                         System.out.println("Exam \"" + published.getTitle() + "\" published!");
                         running = false;
                     }
@@ -128,7 +124,7 @@ public class Main {
         return published;
     }
 
-   private static void runStudentMenu(Scanner sc, List<Exam> availableExams) {
+    private static void runStudentMenu(Scanner sc, List<Exam> availableExams) {
         boolean running = true;
         while (running) {
             System.out.println("\n=== Student Menu ===");
@@ -150,7 +146,8 @@ public class Main {
                     }
 
                     Map<Integer, Answer> answers = new HashMap<>();
-                    System.out.println("\n=== " + selectedExam.getTitle() + " (" + selectedExam.getCategory() + ") ===");
+                    System.out
+                            .println("\n=== " + selectedExam.getTitle() + " (" + selectedExam.getCategory() + ") ===");
 
                     for (Question q : selectedExam.getQuestions()) {
                         System.out.println("\nQ" + q.getNumber() + ": " + q.getText());
@@ -179,7 +176,6 @@ public class Main {
             }
         }
     }
-
 
     private static Exam selectExam(Scanner sc, List<Exam> availableExams) {
         LinkedHashMap<String, String> categories = new LinkedHashMap<>();
@@ -246,7 +242,6 @@ public class Main {
         }
     }
 
-
     private static Question createQuestion(Scanner sc, int questionNumber) {
         System.out.println("Question type:");
         System.out.println("1. Multiple choice");
@@ -272,6 +267,17 @@ public class Main {
 
         String correct = readTrueFalseAnswer(sc, "a=true, b=false. Correct answer (a/b): ");
         return new TrueFalseQuestion(questionNumber, text, correct, 1);
+    }
+
+    private static Answer readAnswerForQuestion(Scanner sc, Question question) {
+        while (true) {
+            System.out.print(question.getAnswerPrompt());
+            String input = sc.nextLine().trim().toLowerCase();
+            if (question.isValidAnswer(input)) {
+                return Answer.fromText(input);
+            }
+            System.out.println("Invalid answer.");
+        }
     }
 
     private static String readRequiredText(Scanner sc, String prompt) {
